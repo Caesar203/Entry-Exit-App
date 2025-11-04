@@ -1,0 +1,7 @@
+{
+  "name": "Copy of Swift-Pass: Hostel Entry Management",
+  "description": "An efficient hostel entry and exit management system for guards and wardens, featuring QR code scanning, real-time activity tracking, automated alerts, and reporting.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
