@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Role, LogEntry, LogType, AlertType } from './types';
 import useLocalStorage from './hooks/useLocalStorage';
 import Header from './components/Header';
@@ -14,6 +14,16 @@ const App: React.FC = () => {
   const [role, setRole] = useLocalStorage<Role>('swift-pass-role', Role.GUARD);
   const [logs, setLogs] = useLocalStorage<LogEntry[]>('swift-pass-logs', []);
   const [holidayMode, setHolidayMode] = useLocalStorage<boolean>('swift-pass-holiday-mode', false);
+
+  useEffect(() => {
+    // Check if the browser supports notifications and request permission if needed.
+    if (!('Notification' in window)) {
+      console.warn('This browser does not support desktop notification.');
+    } else if (Notification.permission === 'default') {
+      // We need to ask the user for permission.
+      Notification.requestPermission();
+    }
+  }, []);
 
   const handleScan = (studentId: string, logType: LogType) => {
     const now = new Date();
@@ -35,6 +45,15 @@ const App: React.FC = () => {
       timestamp: now.toISOString(),
       alertType,
     };
+    
+    // Trigger a notification if there's an alert and permission has been granted.
+    if (alertType !== AlertType.NONE && Notification.permission === 'granted') {
+      const title = alertType === AlertType.LATE_ENTRY ? 'Late Entry Alert' : 'Early Exit Alert';
+      const options = {
+        body: `Student ${studentId} recorded a ${logType.toLowerCase()} at ${now.toLocaleTimeString()}.`,
+      };
+      new Notification(title, options);
+    }
 
     setLogs(prevLogs => [newLog, ...prevLogs]);
   };
